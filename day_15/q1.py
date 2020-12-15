@@ -20,7 +20,10 @@ def run(numbers):
 
     def speak(n):
         nonlocal t, last_n, memory
-        memory[n].append(t)
+        l = memory[n]
+        l.append(t)
+        if len(l) > 2:
+            l.pop(0)
         t += 1
         last_n = n
         yield n
@@ -39,7 +42,8 @@ def run(numbers):
             # New number
             # print(f'{t}: never spoke {last_n} -> 0')
             yield from speak(0)
-
+        if not t % 100000:
+            print(f'{t/30000000:.3f}')
 
 def tests():
     print('Tests\n-----\n')
@@ -47,6 +51,7 @@ def tests():
     # print(results)
     assert results[:10] == TEST_OUTPUT
     assert results[-1] == 436
+    print(results)
 
     for test_input, expected in TESTS_2020:
         results = list(islice(run(test_input), 2020))
@@ -60,6 +65,9 @@ def main():
     with open("input_1.txt", 'r') as input_file:
         numbers = [int(n) for n in input_file.readlines()[0].strip().split(',')]
     results = list(islice(run(numbers), 2020))
+    print(results[-1])
+
+    results = list(islice(run(numbers), 30000000))
     print(results[-1])
 
 if __name__ == '__main__':
