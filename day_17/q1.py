@@ -1,5 +1,6 @@
-from typing import NamedTuple, Tuple, Dict
-from collections import Counter, defaultdict
+from typing import Tuple, Dict
+from collections import Counter, defaultdict, namedtuple
+from itertools import product 
 TEST_INPUT = [
     '.#.',
     '..#',
@@ -9,30 +10,23 @@ TEST_INPUT = [
 ACTIVE = '#'
 INACTIVE = '.'
 
-class Point(NamedTuple):
-    x: int
-    y: int
-    z: int
+
+class Point(tuple):
+
+    def iter_adjacent(self):
+        for offset in product((-1, 0, 1), repeat=len(self)):
+            if offset == (0,) * len(self):
+                continue
+            yield self + offset
 
     def __add__(self, other):
-        return Point(self.x + other.x, self.y + other.y, self.z + other.z)
+        return Point(a + b for a, b in zip(self, other))
 
     def __sub__(self, other):
-        return Point(self.x - other.x, self.y - other.y, self.z - other.z)
+        return Point(a - b for a, b in zip(self, other))
 
     def __mul__(self, other):
-        return Point(self.x * other, self.y * other,  self.z * other)
-
-    def iter_adjacent(self) -> Tuple['Point']:
-        for x in (-1, 0, 1):
-            for y in (-1, 0, 1):
-                for z in (-1, 0, 1):
-                    if (x, y, z) == (0, 0, 0):
-                        continue
-                    yield Point(self.x + x, self.y + y, self.z + z)
-    
-    def __repr__(self):
-        return f'({self.x}, {self.y}, {self.z})'
+        return Point(a * other for a in self)
 
 
 def run(pocket_dimension: Dict[Point, str]):
@@ -68,12 +62,12 @@ def run(pocket_dimension: Dict[Point, str]):
         pocket_dimension[p] = INACTIVE
 
 
-def load_pocket_dimension(lines) -> Dict[Point, str]:
+def load_pocket_dimension(lines, dimensions=3) -> Dict[Point, str]:
     pocket_dimension = defaultdict(lambda: INACTIVE)
     for y, line in enumerate(lines):
         for x, char in enumerate(line):
             if char == ACTIVE:
-                pocket_dimension[Point(x, y, 0)] = ACTIVE
+                pocket_dimension[Point((x, y, *range(dimensions-2)))] = ACTIVE
     return pocket_dimension
 
 def part_1(pocket_dimension: Dict[Point, str]):
@@ -93,6 +87,10 @@ def main():
 
     with open("input_1.txt", 'r') as input_file:
         pocket_dimension = load_pocket_dimension((line.strip() for line in input_file.readlines()))
+    part_1(pocket_dimension)
+
+    with open("input_1.txt", 'r') as input_file:
+        pocket_dimension = load_pocket_dimension((line.strip() for line in input_file.readlines()), dimensions=4)
     part_1(pocket_dimension)
 
 if __name__ == '__main__':
